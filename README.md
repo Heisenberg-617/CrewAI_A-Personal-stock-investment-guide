@@ -288,7 +288,9 @@ These limits can change; treat this as a reference snapshot:
 ## Author:
 
 **Creator:**  Baddy Reda  
+
 **Status:** UM6P Student | AI & Agents Enthusiast 
+
 **Contact:** redabaddy@emines.um6p.ma
 
 ---
