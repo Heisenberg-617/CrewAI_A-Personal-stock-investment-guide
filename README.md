@@ -9,6 +9,91 @@ This repository implements a **multi-agent research pipeline** that produces:
 
 > **Not financial advice.** This is an AI-assisted research workflow to help you structure due diligence and long-term thinking.
 
+## Architecture
+
+### Multi-Agent Research Pipeline (Hierarchical Crew)
+
+This project implements a **hierarchical multi-agent pipeline** to produce a Morocco-focused, long-term (10–15y) investing guide that is **Sharia-aware by business activity**.
+
+- **Stage 1 (Macro → Compliance):** identify durable Morocco sectors, then validate Sharia compliance (activity-based).
+- **Stage 2 (Equities → Synthesis):** shortlist listed companies, perform deep research, then produce a personal guide + a professional report.
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│            MOROCCO LONG-TERM SHARIA-AWARE INVESTING GUIDE (PIPELINE)         │
+└───────────────────────────────┬──────────────────────────────────────────────┘
+                                │
+                      ┌─────────▼─────────┐
+                      │  Manager Agent    │
+                      │ (hierarchical)    │
+                      │ • Orchestrates    │
+                      │ • Enforces rigor  │
+                      │ • Avoids repeats  │
+                      └─────────┬─────────┘
+                                │
+                ┌───────────────┼────────────────────────────────┐
+                │               │                                │
+        ┌───────▼────────┐  ┌───▼───────────────────┐   ┌────────▼──────────┐
+        │ Macro Sector   │  │ Sharia Screening      │   │ Equity Research   │
+        │ Strategist     │  │ Analyst (activity)    │   │ (deep research)   │
+        │ • Rank sectors │  │ • Approve/flag        │   │ • Company briefs  │
+        │ • Drivers/risks│  │ • Explain uncertainty │   │ • 5–10y trends    │
+        └───────┬────────┘  └───┬───────────────────┘   └────────┬──────────┘
+                │               │                                │
+                ▼               ▼                                ▼
+   output/morocco_top_sectors.json    output/sharia_approved_sectors.json
+                                                   │
+                                                   ▼
+                                     output/shortlisted_companies.json
+                                                   │
+                                                   ▼
+                                     output/company_deep_research.json
+                                                   │
+                         ┌─────────────────────────┴─────────────────────────┐
+                         │                                                   │
+                 ┌───────▼──────────────┐                     ┌──────────────▼──────────────┐
+                 │ Portfolio Guide      │                     │ Investment Report Writer    │
+                 │ Writer               │                     │ (buy-side style)            │
+                 │ • Watchlist framework│                     │ • Full report (Markdown)    │
+                 │ • DD checklist       │                     │ • Structured sections       │
+                 └─────────┬────────────┘                     └──────────────┬──────────────┘
+                           │                                                 │
+                           ▼                                                 ▼
+          output/morocco_investing_guide.md         output/Morocco_Long_Term_Investment_Report.md
+```
+
+---
+
+## Project Structure
+
+```
+personal_stock_investment_guide/
+│
+├── pyproject.toml                         # Project config (uv + dependencies + scripts)
+├── README.md                              # Main documentation
+├── .env                                   # API keys & local embedding config (DO NOT COMMIT)
+├── .gitignore                             # Excludes .env, caches, outputs if needed
+│
+├── src/
+│   └── personal_stock_investment_guide/
+│       ├── main.py                        # Entry point (kickoff inputs: Morocco, horizon, constraints)
+│       ├── crew.py                        # Crew definition (agents, tasks, manager, memory, embedder)
+│       └── config/
+│           ├── agents.yaml                # Agent roles + LLM mapping (Groq-hosted models)
+│           └── tasks.yaml                 # Task chain + output files
+│
+├── output/                                # Auto-generated deliverables
+│   ├── morocco_top_sectors.json
+│   ├── sharia_approved_sectors.json
+│   ├── shortlisted_companies.json
+│   ├── company_deep_research.json
+│   ├── morocco_investing_guide.md
+│   └── Morocco_Long_Term_Investment_Report.md
+│
+└── memory/                                # Local long-term memory store (SQLite) + crew memory artifacts
+    └── long_term_memory_storage.db
+```
+
 
 ## What It Generates (Outputs)
 
@@ -125,14 +210,26 @@ The personal_stock_investment_guide Crew is composed of multiple AI agents, each
 
 ### Agents (src/personal_stock_investment_guide/config/agents.yaml)
 
-Your crew is configured with these roles:
+Your crew is configured with these roles (and the **specific Groq-hosted models** used). Model choices are intentional: **bigger models** handle macro reasoning + orchestration, **specialized models** handle rule-based screening, and a **very large model** is reserved for the heavy, source-grounded deep research step.
 
-- **Morocco Macro & Sector Strategist** (10–15y horizon): ranks Morocco sectors using long-run structural drivers.
-- **Sharia Compliance & Business Activity Screener**: screens sectors/companies for Sharia compliance (activity-based), flags uncertainty.
-- **Senior Morocco Equity Researcher**: deep fundamental research; prefers primary sources (annual reports/AMMC filings/investor decks).
-- **Personal Investment Guide Writer**: synthesizes into actionable watchlist + due diligence checklist.
-- **Professional Investment Report Writer**: produces a complete buy-side style report in Markdown.
-- **Manager**: coordinates the pipeline in a hierarchical process and enforces rigor (sources, assumptions, no repetition).
+- **Morocco Macro & Sector Strategist** *(LLM: `groq/llama-3.3-70b-versatile`)*: ranks Morocco sectors using long-run structural drivers.  
+  *Rationale:* strong high-level reasoning + synthesis for macro/sector narratives without being too slow.
+
+- **Sharia Compliance & Business Activity Screener** *(LLM: `groq/qwen/qwen3-32b`)*: screens sectors/companies for Sharia compliance (activity-based), flags uncertainty.  
+  *Rationale:* reliable structured analysis and careful classification for compliance-style filtering.
+
+- **Senior Morocco Equity Researcher** *(LLM: `groq/openai/gpt-oss-120b`)*: deep fundamental research; prefers primary sources (annual reports/AMMC filings/investor decks).  
+  *Rationale:* maximum depth for multi-document extraction + synthesis, and higher tolerance for long, source-driven briefs.
+
+- **Personal Investment Guide Writer** *(LLM: `groq/meta-llama/llama-4-maverick-17b-128e-instruct`)*: synthesizes into actionable watchlist + due diligence checklist.  
+  *Rationale:* strong writing + structured summarization to convert research into a practical guide.
+
+- **Professional Investment Report Writer** *(LLM: `groq/meta-llama/llama-4-maverick-17b-128e-instruct`)*: produces a complete buy-side style report in Markdown.  
+  *Rationale:* consistent tone, long-form coherence, and report-style formatting.
+
+- **Manager** *(LLM: `groq/llama-3.3-70b-versatile`)*: coordinates the pipeline in a hierarchical process and enforces rigor (sources, assumptions, no repetition).  
+  *Rationale:* dependable “big-picture” control model to keep the crew aligned and outputs consistent.
+
 
 ### Tasks / Pipeline (src/personal_stock_investment_guide/config/tasks.yaml)
 
