@@ -285,11 +285,13 @@ These limits can change; treat this as a reference snapshot:
 
 ---
 
-## Author
+## Author:
 
-**Creator:** Baddy Reda  
+**Creator:**  Baddy Reda  
 **Status:** UM6P Student | AI & Agents Enthusiast 
 **Contact:** redabaddy@emines.um6p.ma
+
 ---
+
 
 ***Happy researching!***
