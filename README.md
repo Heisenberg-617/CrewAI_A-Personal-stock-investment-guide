@@ -90,8 +90,8 @@ personal_stock_investment_guide/
 │   ├── morocco_investing_guide.md
 │   └── Morocco_Long_Term_Investment_Report.md
 │
-└── memory/                                # Local long-term memory store (SQLite) + crew memory artifacts
-    └── long_term_memory_storage.db
+└── memory/                                # crew memory artifacts
+    └── ...
 ```
 
 
@@ -203,7 +203,7 @@ This command initializes the personal_stock_investment_guide Crew, assembling th
 
 This example, unmodified, will run the create a `report.md` file with the output of a research on LLMs in the root folder.
 
-## Understanding Your Crew
+## Understanding The Crew
 
 The personal_stock_investment_guide Crew is composed of multiple AI agents, each with unique roles, goals, and tools. These agents collaborate on a series of tasks, defined in `config/tasks.yaml`, leveraging their collective skills to achieve complex objectives. The `config/agents.yaml` file outlines the capabilities and configurations of each agent in your crew.
 
@@ -248,6 +248,40 @@ The workflow is a strict dependency chain:
 - **Memory**: enabled on agents + crew
 - **Embeddings**: configured to use **Ollama** (`nomic-embed-text`) for the crew’s embedder
 
+### Memory
+
+This project uses **three complementary memory types** to reduce repeated work, keep naming consistent, and improve results across runs:
+
+- **Short-Term Memory (STM)**  
+  Stores run-specific context (recent links, extracted KPIs, intermediate summaries) using RAG storage.
+
+- **Long-Term Memory (LTM)**  
+  Stores durable decisions and conclusions across runs (final sector theses, screening policy notes, do-not-repeat list) in SQLite.
+
+- **Entity Memory**  
+  Stores canonical identifiers and aliases for **sectors, institutions, companies** (name, ticker, ISIN if found, parent/subsidiary links) to prevent duplicates and keep consistent naming.
+
+#### Prompt behavior (important)
+
+Agents are instructed to:
+- **Check memory first** (avoid re-researching unchanged items)
+- **Store structured summaries** (final decisions + rationale + sources), not noisy drafts
+- **Treat memory as hints, not truth**: verify critical claims with credible sources
+- **Avoid repeating the same companies across runs** unless explicitly justified
+
+This behavior is implemented in `config/agents.yaml` (Memory Protocol + hygiene rules).
+
+
+#### Memory storage notes / common pitfalls
+
+- **Keep the embedding provider consistent** for RAG-based memories.  
+  Reusing a persisted vector store created with one embedder and then switching to another can cause configuration conflicts.
+- Consider using **separate folders** for different RAG stores to prevent mixing:
+  - `./memory/stm/`
+  - `./memory/entities/`
+- If you change embedder settings or models, clear/rebuild the affected RAG stores.
+
+---
 
 ## Cost & Rate Limits (Groq / Serper)
 
