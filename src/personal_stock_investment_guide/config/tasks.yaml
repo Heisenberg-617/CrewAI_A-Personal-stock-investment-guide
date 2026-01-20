@@ -1,0 +1,108 @@
+find_top_morocco_sectors:
+  description: >
+    Using recent and credible sources, identify the TOP 5 healthiest sectors in Morocco for LONG-TERM investing (10–15 years).
+    Exclude banking, insurance, and other haram sectors.
+    For each sector:
+    - long-term structural drivers (policy, demographics, exports, infrastructure, energy transition, etc.)
+    - resilience to cycles
+    - key Morocco-specific data points
+    - key risks
+    Provide citations (links) for every major claim.
+  expected_output: >
+    JSON with 5 sectors ranked, each with rationale, key drivers, risks, and sources.
+  agent: macro_sector_strategist
+  output_file: output/morocco_top_sectors.json
+
+screen_sectors_for_sharia:
+  description: >
+    Review the ranked sectors and confirm Sharia compliance by business activity.
+    If any sector is borderline, flag it and explain.
+    Output an approved list of sectors with notes.
+  expected_output: >
+    JSON with approved sectors and screening notes (include sources if relevant).
+  agent: sharia_screening_analyst
+  context:
+    - find_top_morocco_sectors
+  output_file: output/sharia_approved_sectors.json
+
+shortlist_listed_companies_ma:
+  description: >
+    For each approved sector, find 2–4 Moroccan LISTED companies (Bourse de Casablanca) suitable for long-term analysis.
+    Avoid banks/insurance and any clearly haram business activity.
+    Return company name, ticker (if applicable), sector mapping, and why it belongs on the shortlist.
+    Use recent sources + official issuer pages/annual reports where possible. Include links.
+  expected_output: >
+    JSON list of shortlisted companies grouped by sector, with tickers and rationale + sources.
+  agent: morocco_equity_researcher
+  context:
+    - screen_sectors_for_sharia
+  output_file: output/shortlisted_companies.json
+
+deep_research_companies_ma:
+  description: >
+    For each shortlisted company, produce deep research focused on LONG-TERM trustworthiness and execution:
+    - Business model & core revenue drivers (Morocco + export exposure)
+    - Management vision/strategy: what they said historically vs what actually happened
+    - Evidence of execution discipline (capex outcomes, margins, market share, major projects)
+    - 5–10 year trend summary where possible: revenue, profitability, leverage, cash generation, dividends
+    - Governance & ownership (red flags, related-party risks if any)
+    - Key long-term risks (regulation, FX, commodities, competition)
+    - A "trust score" explanation (qualitative) based on evidence
+    All major statements must have sources (prefer annual reports, AMMC filings, investor presentations).
+  expected_output: >
+    JSON report with one object per company including a structured deep research brief + sources.
+  agent: morocco_equity_researcher
+  context:
+    - shortlist_listed_companies_ma
+  output_file: output/company_deep_research.json
+
+build_long_term_investing_guide_ma:
+  description: >
+    Synthesize everything into a personal long-term investing guide for the user (Moroccan context, 10–15y horizon, Sharia-aware).
+    Must include:
+    - Final ranked sectors (why they win long-term in Morocco)
+    - Best candidate companies (and why), and why others were not selected
+    - Watchlist framework: what to monitor quarterly/yearly (KPIs, management promises vs outcomes)
+    - Practical due diligence checklist (what docs to read, what to verify)
+    - Clear uncertainty notes and “next verification steps”
+    Use citations/links for key claims.
+  expected_output: >
+    A Markdown guide with sector ranking, company picks, and a practical watchlist framework.
+  agent: portfolio_guide_writer
+  context:
+    - deep_research_companies_ma
+  output_file: output/morocco_investing_guide.md
+
+write_professional_investment_report:
+  description: >
+    Using all prior research, write a full professional long-term investment report
+    for Morocco (10–15 year horizon, Sharia-aware).
+
+    The report must include:
+
+    1) Executive Summary
+    2) Morocco Macroeconomic Outlook
+    3) Top 5 Long-Term Sectors (ranked)
+    4) Sharia Compliance Framework
+    5) Sector Deep Analysis
+    6) Company Deep Analysis
+    7) Management Vision vs Execution
+    8) Financial Performance Summary
+    9) Risk Analysis
+    10) Long-Term Outlook (10–15y)
+    11) Watchlist Framework
+    12) Conclusion
+    13) Sources
+
+    Style: professional buy-side research report.
+    Tone: analytical, conservative, evidence-based.
+    Use clear headings and tables where relevant.
+
+  expected_output: >
+    A complete professional investment report in Markdown format.
+
+  agent: investment_report_writer
+  context:
+    - build_long_term_investing_guide_ma
+
+  output_file: output/Morocco_Long_Term_Investment_Report.md

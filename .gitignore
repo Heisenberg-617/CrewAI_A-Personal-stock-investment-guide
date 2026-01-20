@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+*.so
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local agent memory / state
+memory/
+*.db
+*.sqlite
+*.sqlite3
+
+# Personal notes (optional)
+knowledge/user_preference.txt
+
+# Envs
+.venv/
+venv/
+
+# Local secrets
+.env
+.env.*
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Build
+dist/
+build/
+*.egg-info/

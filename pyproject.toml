@@ -1,0 +1,30 @@
+[project]
+name = "Personal stock investment guide"
+version = "0.1.0"
+description = "A Sharia compliant personal stock picker for long term investment (10-15y) using crewAI"
+authors = [{ name = "BADDY Reda", email = "reda.baddy@emines.um6p.ma" }]
+requires-python = ">=3.10,<3.13"
+dependencies = [
+    "crewai[anthropic,openai,tools]==1.8.1",
+    "litellm>=1.75.3",
+    "litellm[proxy]<=1.74.9",
+    "apscheduler",           # Explicitly add to fix your specific error
+    "fastapi",               # Required for the proxy to run
+    "uvicorn",               # Required for the proxy to run
+    "orjson"                 # Often missing in standard proxy installs
+]
+
+[project.scripts]
+personal_stock_investment_guide = "personal_stock_investment_guide.main:run"
+run_crew = "personal_stock_investment_guide.main:run"
+train = "personal_stock_investment_guide.main:train"
+replay = "personal_stock_investment_guide.main:replay"
+test = "personal_stock_investment_guide.main:test"
+run_with_trigger = "personal_stock_investment_guide.main:run_with_trigger"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.crewai]
+type = "crew"
